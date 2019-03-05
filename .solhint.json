@@ -1,0 +1,9 @@
+{
+  "extends": "strict",
+  "rules": {
+    "indent": ["warn", 2],
+    "avoid-low-level-calls": false,
+    "no-inline-assembly": false,
+    "max-line-length": 163
+  }
+}
