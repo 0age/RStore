@@ -13,6 +13,8 @@ There are actually two different metamorphic contracts that are used in alternat
 
 **DISCLAIMER: this implements a few highly experimental features - be sure to *educate the users of your contract* if it will rely on metamorphic contracts for storage! These contracts have not yet been fully tested or audited - proceed with caution and please share any exploits or optimizations you discover.**
 
+For additional context and an explanation of the initialization code used to deploy metamorphic storage contracts, check out [this post](https://medium.com/@0age/on-efficient-ethereum-storage-c76869591add). 
+
 ## Table of Contents
 
 - [Install](#install)
