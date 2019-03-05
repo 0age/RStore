@@ -1,6 +1,6 @@
 {
   "name": "RStore",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "RStore - use the runtime code of metamorphic contracts for dynamic storage.",
   "author": "0age",
   "license": "MIT",

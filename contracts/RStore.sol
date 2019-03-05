@@ -2,7 +2,7 @@ pragma solidity 0.5.3;
 
 
 /**
- * @title RStore
+ * @title RStore v0.0.2
  * @author 0age
  * @notice This contract uses metamorphic contracts in place of standard storage
  * in order to save gas for certain applications. Then, extcodecopy is used to
@@ -18,6 +18,11 @@ pragma solidity 0.5.3;
 contract RStore {
   // allocate transient storage that will be stored temporarily.
   bytes32[] private _transientStorage;
+
+  // set metamorphic init code to add control word, get data, & deploy runtime.
+  bytes private constant METAMORPHIC_INIT_CODE = (
+    hex"5860008158601c335a630c85c0028752fa153d602090039150607381533360601b600152653318585733ff60d01b601552602080808403918260d81b601b52602001903ef3"
+  );
 
   // set initialization code hash for metamorphic storage contract as a constant
   bytes32 private constant METAMORPHIC_INIT_CODE_HASH = (
@@ -36,10 +41,8 @@ contract RStore {
       _transientStorage.push(word);
     }
 
-    // metamorphic init code: insert control word, get data, and deploy runtime.
-    bytes memory metamorphicInitCode = (
-      hex"5860008158601c335a630c85c0028752fa153d602090039150607381533360601b600152653318585733ff60d01b601552602080808403918260d81b601b52602001903ef3"
-    );
+    // add the metamorphic initialization code to memory for use in assembly.
+    bytes memory metamorphicInitCode = METAMORPHIC_INIT_CODE;
 
     // calculate the contract address of the primary metamorphic contract.
     address targetMetamorphicContract = _getPrimaryMetamorphicContractAddress();
@@ -140,7 +143,7 @@ contract RStore {
    * contract.
    */
   function getMetamorphicStorageContractInitializationCode() external pure returns (bytes memory) {
-    return hex"5860008158601c335a630c85c0028752fa153d602090039150607381533360601b600152653318585733ff60d01b601552602080808403918260d81b601b52602001903ef3";
+    return METAMORPHIC_INIT_CODE;
   }
 
   /**
@@ -184,12 +187,11 @@ contract RStore {
         uint256(                    // convert to uint to truncate upper digits.
           keccak256(                // compute the CREATE2 hash using 4 inputs.
             abi.encodePacked(       // pack all inputs to the hash together.
-              hex"ff",              // start with 0xff to distinguish from RLP.
+              bytes1(0xff),         // start with 0xff to distinguish from RLP.
               address(this),        // this contract will be the caller.
-              uint256(              // convert to uint to leftpad upper digits.
-                uint160(            // downcast uint to match the address type.
-                  msg.sender        // pass in the calling address for the salt.
-                )
+              bytes12(0x000000000000000000000000), // first 12 salt bytes empty.
+              uint160(              // downcast uint to match the address type.
+                msg.sender          // pass in the calling address for the salt.
               ),                 
               METAMORPHIC_INIT_CODE_HASH // pass in the hash of the init code.
             )
@@ -210,13 +212,12 @@ contract RStore {
         uint256(                    // convert to uint to truncate upper digits.
           keccak256(                // compute the CREATE2 hash using 4 inputs.
             abi.encodePacked(       // pack all inputs to the hash together.
-              hex"ff",              // start with 0xff to distinguish from RLP.
+              bytes1(0xff),         // start with 0xff to distinguish from RLP.
               address(this),        // this contract will be the caller.
-              uint256(              // convert to uint to leftpad upper digits.
-                uint160(            // downcast uint to match the address type.
-                  msg.sender        // pass in the calling address for the salt.
-                ) + 1               // add 1 to the caller for secondary.
-              ),                 
+              bytes12(0x000000000000000000000000), // first 12 salt bytes empty.
+              uint160(              // downcast uint to match the address type.
+                msg.sender          // pass in the calling address for the salt.
+              ) + 1,                // add 1 to the caller for secondary.          
               METAMORPHIC_INIT_CODE_HASH  // pass in the hash of the init code.
             )
           )
